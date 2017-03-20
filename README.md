@@ -47,7 +47,7 @@ document.addEventListener('deviceready', function() {
     
 }, false);
 ```
-The you can use the following methods:
+Then you can use the following methods:
 
 ```javascript
   ssAds.showRewardedAd(placementName, claimSpace, successCallback, failureCallback);
