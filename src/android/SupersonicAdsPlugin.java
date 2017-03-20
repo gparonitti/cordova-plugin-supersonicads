@@ -1,11 +1,12 @@
 package com.blakgeek.cordova.plugin.supersonicads;
 
 import android.util.Log;
-import android.webkit.WebView;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.CordovaInterface;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,88 +23,140 @@ import com.supersonic.mediationsdk.sdk.SupersonicFactory;
 public class SupersonicAdsPlugin extends CordovaPlugin {
 
     private static final String TAG = "[SupersonicAdsPlugin]";
-    public static final String EVENT_INTERSTITIAL_INITIALIZED = "interstitialInitialized";
-    public static final String EVENT_INTERSTITIAL_INIT_FAILED = "interstitialInitializationFailed";
-    public static final String EVENT_INTERSTITIAL_AVAILABILITY_CHANGED = "interstitialAvailabilityChanged";
-    public static final String EVENT_INTERSTITIAL_SHOWN = "interstitialShown";
-    public static final String EVENT_INTERSTITIAL_SHOW_FAILED = "interstitialShowFailed";
-    public static final String EVENT_INTERSTITIAL_CLICKED = "interstitialClicked";
-    public static final String EVENT_INTERSTITIAL_CLOSED = "interstitialClosed";
-    public static final String EVENT_OFFERWALL_CLOSED = "offerwallClosed";
-    public static final String EVENT_OFFERWALL_CREDIT_FAILED = "offerwallCreditFailed";
-    public static final String EVENT_OFFERWALL_CREDITED = "offerwallCreditReceived";
-    public static final String EVENT_OFFERWALL_SHOW_FAILED = "offerwallShowFailed";
-    public static final String EVENT_OFFERWALL_OPENED = "offerwallOpened";
-    public static final String EVENT_OFFERWALL_INIT_FAILED = "offerwallInitializationFailed";
-    public static final String EVENT_OFFERWALL_INITIALIZED = "offerwallInitialized";
-    public static final String EVENT_REWARDED_VIDEO_REWARDED = "rewardedVideoRewardReceived";
-    public static final String EVENT_REWARDED_VIDEO_ENDED = "rewardedVideoEnded";
-    public static final String EVENT_REWARDED_VIDEO_STARTED = "rewardedVideoStarted";
-    public static final String EVENT_REWARDED_VIDEO_AVAILBILITY_CHANGED = "rewardedVideoAvailabilityChanged";
-    public static final String EVENT_REWARDED_VIDEO_CLOSED = "rewardedVideoClosed";
-    public static final String EVENT_REWARDED_VIDEO_OPENED = "rewardedVideoOpened";
-    public static final String EVENT_REWARDED_VIDEO_INIT_FAILED = "rewardedVideoInitializationFailed";
-    public static final String EVENT_REWARDED_VIDEO_INITIALIZED = "rewardedVideoInitialized";
+
+    private static final String EVENT_INTERSTITIAL_INITIALIZED = "onInterstitialInitSuccess";
+    private static final String EVENT_INTERSTITIAL_INIT_FAILED = "onInterstitialInitFailed";
+    private static final String EVENT_INTERSTITIAL_LOAD_FAILED = "onInterstitialLoadFailed";
+    private static final String EVENT_INTERSTITIAL_READY = "onInterstitialReady";
+    private static final String EVENT_INTERSTITIAL_SHOWN = "onInterstitialShowSuccess";
+    private static final String EVENT_INTERSTITIAL_SHOW_FAILED = "onInterstitialShowFailed";
+    private static final String EVENT_INTERSTITIAL_CLICK = "onInterstitialClick";
+    private static final String EVENT_INTERSTITIAL_CLOSED = "onInterstitialClose";
+
+    private static final String EVENT_OFFERWALL_CLOSED = "offerwallClosed";
+    private static final String EVENT_OFFERWALL_CREDIT_FAILED = "offerwallCreditFailed";
+    private static final String EVENT_OFFERWALL_CREDITED = "offerwallCreditReceived";
+    private static final String EVENT_OFFERWALL_SHOW_FAILED = "offerwallShowFailed";
+    private static final String EVENT_OFFERWALL_OPENED = "offerwallOpened";
+    private static final String EVENT_OFFERWALL_INIT_FAILED = "offerwallInitializationFailed";
+    private static final String EVENT_OFFERWALL_INITIALIZED = "offerwallInitialized";
+
+    private static final String EVENT_REWARDED_VIDEO_REWARDED = "rewardedVideoRewardReceived";
+    private static final String EVENT_REWARDED_VIDEO_ENDED = "rewardedVideoEnded";
+    private static final String EVENT_REWARDED_VIDEO_STARTED = "rewardedVideoStarted";
+    private static final String EVENT_REWARDED_VIDEO_AVAILBILITY_CHANGED = "rewardedVideoAvailabilityChanged";
+    private static final String EVENT_REWARDED_VIDEO_CLOSED = "rewardedVideoClosed";
+    private static final String EVENT_REWARDED_VIDEO_OPENED = "rewardedVideoOpened";
+    private static final String EVENT_REWARDED_VIDEO_INIT_FAILED = "rewardedVideoInitializationFailed";
+    private static final String EVENT_REWARDED_VIDEO_INITIALIZED = "rewardedVideoInitialized";
     private Supersonic supersonic;
 
+
     @Override
-    protected void pluginInitialize() {
-
-        supersonic = SupersonicFactory.getInstance();
-
-        supersonic.setInterstitialListener(interstitialListener);
-        supersonic.setOfferwallListener(offerwallListener);
-        supersonic.setRewardedVideoListener(rewardedVideoListener);
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        super.initialize(cordova, webView);
+        pluginInit();
     }
+
+    @Override
+    public void onReset() {
+        Log.i(TAG, "onReset");
+        super.onReset();
+//            if (supersonic != null) {}
+    }
+
+    @Override
+    public void onResume(boolean multitasking) {
+        super.onResume(multitasking);
+        if (supersonic != null) {
+            Log.i(TAG, "onResume");
+        }
+    }
+
+    @Override
+    public void onPause(boolean multitasking) {
+        super.onPause(multitasking);
+        if (supersonic != null) {
+            Log.i(TAG, "onPause");
+        }
+    }
+
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         try {
             Log.i(TAG, action);
-
             if (action.equals("init")) {
-
                 init(args.getString(0), args.getString(1));
                 callbackContext.success();
-            } else if (action.equals("showRewardedAd")) {
-
+            }
+            else if (action.equals("showRewardedAd")) {
                 if (args.isNull(0)) {
                     supersonic.showRewardedVideo();
-                } else {
+                }
+                else {
                     supersonic.showRewardedVideo(args.optString(0));
                 }
                 callbackContext.success();
-            } else if (action.equals("showInterstitial")) {
-
-                supersonic.showInterstitial();
+            }
+            else if (action.equals("loadInterstitial")) {
+                supersonic.loadInterstitial();
                 callbackContext.success();
-            } else if (action.equals("showOfferwall")) {
-
+            }
+            else if (action.equals("showInterstitial")) {
+                if (args.isNull(0)) {
+                    supersonic.showInterstitial();
+                }
+                else {
+                    supersonic.showInterstitial(args.optString(0));
+                }
+                callbackContext.success();
+            }
+            else if (action.equals("isInterstitialReady")) {
+                supersonic.isInterstitialReady();
+                callbackContext.success();
+            }
+            else if (action.equals("showOfferwall")) {
                 supersonic.showOfferwall();
                 callbackContext.success();
-            } else {
-
+            }
+            else {
                 callbackContext.error("Unknown Action");
                 return false;
             }
             return true;
         } catch (Exception e) {
-
             Log.e("SupersonicAdsPlugin", e.getMessage());
+
             callbackContext.error("SupersonicAdsPlugin: " + e.getMessage());
             return false;
         }
     }
 
     private void init(String appKey, String userId) {
+        Log.i(TAG, "Listener Initialized!!!");
+        supersonic.setInterstitialListener(interstitialListener);
+        supersonic.setOfferwallListener(offerwallListener);
+        supersonic.setRewardedVideoListener(rewardedVideoListener);
 
         Log.i(TAG, String.format("key: %s, userId: %s", appKey, userId));
         supersonic.initInterstitial(this.cordova.getActivity(), appKey, userId);
         supersonic.initOfferwall(this.cordova.getActivity(), appKey, userId);
         supersonic.initRewardedVideo(this.cordova.getActivity(), appKey, userId);
 
+//        pluginInit();
+
         // Change config at runtime example #1 - set client side callbacks for the offerwall product
         SupersonicConfig.getConfigObj().setClientSideCallbacks(true);
+    }
+
+    private void pluginInit() {
+        Log.i(TAG, "pluginInit for cordova");
+        supersonic = SupersonicFactory.getInstance();
+
+//        supersonic.setInterstitialListener(interstitialListener);
+//        supersonic.setOfferwallListener(offerwallListener);
+//        supersonic.setRewardedVideoListener(rewardedVideoListener);
     }
 
     private void fireEvent(final String event) {
@@ -157,6 +210,11 @@ public class SupersonicAdsPlugin extends CordovaPlugin {
             fireEvent(EVENT_REWARDED_VIDEO_INIT_FAILED, data);
         }
 
+        //Invoked when RewardedVideo call to show a rewarded video has failed
+        //SupersonicError contains the reason for the failure.
+        @Override
+        public void onRewardedVideoShowFail(SupersonicError se) {
+        }
 
         @Override
         public void onRewardedVideoAdOpened() {
@@ -230,7 +288,7 @@ public class SupersonicAdsPlugin extends CordovaPlugin {
             JSONObject data = new JSONObject();
             JSONObject wrapper = new JSONObject();
             try {
-                data.put("id", placement.getId());
+//                data.put("id", placement.getId());
                 data.put("name", placement.getPlacementName());
                 data.put("reward", placement.getRewardName());
                 data.put("amount", placement.getRewardAmount());
@@ -357,10 +415,10 @@ public class SupersonicAdsPlugin extends CordovaPlugin {
         }
 
         @Override
-        public void onInterstitialInitFail(SupersonicError supersonicError) {
+        public void onInterstitialInitFailed(SupersonicError supersonicError) {
             //Invoked when Interstitial initialization process is failed.
             //@param supersonicError - A SupersonicError Object which represents the reason of initialization failure.
-            Log.d(TAG, "onInterstitialInitFail : " + supersonicError.toString());
+            Log.d(TAG, "onInterstitialInitFailed : " + supersonicError.toString());
 
             JSONObject data = new JSONObject();
             JSONObject error = new JSONObject();
@@ -373,20 +431,33 @@ public class SupersonicAdsPlugin extends CordovaPlugin {
             fireEvent(EVENT_INTERSTITIAL_INIT_FAILED, data);
         }
 
-
         @Override
-        public void onInterstitialAvailability(boolean available) {
+        public void onInterstitialReady() {
             //Invoked when interstitial availability state has changed.
             //@param available - boolean - true when ad is ready to be displayed, otherwise false.
-            Log.d(TAG, "onInterstitialAvailability : " + available);
+            Log.d(TAG, "Interstitial is Ready");
             JSONObject data = new JSONObject();
             try {
-                data.put("available", available);
+                data.put("available", true);
             } catch (JSONException e) {
             }
-            fireEvent(EVENT_INTERSTITIAL_AVAILABILITY_CHANGED, data);
+            fireEvent(EVENT_INTERSTITIAL_READY, data);
         }
 
+        @Override
+        public void onInterstitialLoadFailed(SupersonicError supersonicError){
+            Log.d(TAG, "onInterstitialLoadFailed : " + supersonicError.toString());
+
+            JSONObject data = new JSONObject();
+            JSONObject error = new JSONObject();
+            try {
+                error.put("code", supersonicError.getErrorCode());
+                error.put("message", supersonicError.getErrorMessage());
+                data.put("error", error);
+            } catch (JSONException e) {
+            }
+            fireEvent(EVENT_INTERSTITIAL_LOAD_FAILED, data);
+        }
 
         @Override
         public void onInterstitialShowSuccess() {
@@ -395,12 +466,11 @@ public class SupersonicAdsPlugin extends CordovaPlugin {
             fireEvent(EVENT_INTERSTITIAL_SHOWN);
         }
 
-
         @Override
-        public void onInterstitialShowFail(SupersonicError supersonicError) {
+        public void onInterstitialShowFailed(SupersonicError supersonicError) {
             //Invoked when Interstitial ad failed to show.
             //@param supersonicError - A SupersonicError object representing the error
-            Log.d(TAG, "onInterstitialShowFail : " + supersonicError.toString());
+            Log.d(TAG, "onInterstitialShowFailed : " + supersonicError.toString());
 
             JSONObject data = new JSONObject();
             JSONObject error = new JSONObject();
@@ -414,18 +484,20 @@ public class SupersonicAdsPlugin extends CordovaPlugin {
         }
 
         @Override
-        public void onInterstitialAdClicked() {
+        public void onInterstitialClick() {
             //Invoked when the end user clicked on the interstitial ad.
-            Log.d(TAG, "onInterstitialAdClicked");
-            fireEvent(EVENT_INTERSTITIAL_CLICKED);
+            Log.d(TAG, "onInterstitialClick");
+            fireEvent(EVENT_INTERSTITIAL_CLICK);
         }
-
 
         @Override
-        public void onInterstitialAdClosed() {
+        public void onInterstitialClose() {
             //Invoked when the ad is closed and the user is about to return to the application
-            Log.d(TAG, "onInterstitialAdClosed");
+            Log.d(TAG, "onInterstitialClose");
             fireEvent(EVENT_INTERSTITIAL_CLOSED);
         }
+
+        @Override
+        public void onInterstitialOpen(){}
     };
 }

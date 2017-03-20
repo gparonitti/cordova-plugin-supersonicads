@@ -1,5 +1,7 @@
 # Supersonic Ads Cordova Plugin
-Add support for [Supersonic Ads](https://www.supersonic.com/) to your Cordova and Phonegap based mobile apps.
+Add support for [Supersonic Ads](https://www.supersonic.com/) to your Cordova and Phonegap based mobile apps. 
+This is a fork from the original project by Carlos \"blakgeek\" Lawton. To him all my thanks. I've simple update 
+the android version of this plugin to let it work with the last release of the supersonics add sdk (and I modified the plugin methods accordingly) 
 
 ## How do I install it? ##
 
@@ -11,96 +13,48 @@ cordova plugin add cordova-plugin-supersonicads
 or
 
 ```
-cordova plugin add https://github.com/blakgeek/cordova-plugin-supersonicads
+cordova plugin add https://github.com/gparonitti/cordova-plugin-supersonicads
 ```
 
 or
 
 ```
-phonegap local plugin add https://github.com/blakgeek/cordova-plugin-supersonicads
+phonegap local plugin add https://github.com/gparonitti/cordova-plugin-supersonicads
 ```
 
 ## How do I use it? ##
 
-```javascript
+```javascript 1.8
 document.addEventListener('deviceready', function() {
-
-	var ssAds = new SupersonicAds("yo_app_key", "some_unique_userid");
+	const ssAds = cordova.require('cordova-plugin-supersonicads.SupersonicAds')
+	const SSADS_KEY =  'whatever_key_provided_by_supersonic_add'
+	const advId = 'user_advertising_id'
 	
-	// show a rewarded ad
-	ssAds.showRewardedAd();
-    	
-	// show a rewarded ad for placement RightHere
-	ssAds.showRewardedAd("RightHere");
+	ssAds.init(
+      SSADS_KEY,
+      advId,
+      () => loadInterstitial('SupersonicAds init success!! Loading Content!',
+      () => console.log('SupersonicAds init error!! Loading Content anyway!')
+    )
     
-	// show an offerwall
-    ssAds.showOfferWall();
-    
-    // show an interstitial
-    ssAds.showInterstitial();
-    
-    // give em some credit
-	window.addEventListener("offerwallCreditReceived", function(e) {
-	    
-	    var credit = e.credit;
-	    
-	    // The number of credits the user has earned.
-	    console.log(credit.amount);
-	    
-	    // The total number of credits ever earned by the user.
-	    console.log(credit.total):
-	    
-	    // estimated flag is the same as totalCreditsFlag 
-	    // In some cases, we won’t be able to provide the exact
-        // amount of credits since the last event (specifically if the user clears
-        // the app’s data). In this case the ‘credits’ will be equal to the ‘totalCredits’,
-        // and this flag will be ‘true’.
-	    console.log(credit.estimated);
-	    
-	}, false);
-	
-	// reward your users
-	window.addEventListener("rewardedVideoRewardReceived", function(e) {
-		
-		var placement = e.placement;
-		console.log(placement.id); // only available on android
-		console.log(placement.name);
-		console.log(placement.reward);
-		console.log(placement.amount);
-	}, false);
+    function loadInterstitial (msg) {
+        console.log(msg)
+        ssAds.loadInterstitial(
+            res => console.log(`SupersonicAds loadInterstitial:  ${res}`),
+            err => console.log(`SupersonicAds loadInterstitial error: ${err}`)
+        )
+    }
     
 }, false);
 ```
+The you can use the following methods:
 
-## Can I just see a working example?
-Yep.  Check out the [demo project](https://github.com/blakgeek/cordova-plugin-supersonicads-demo).  It runs on both Android and iOS.
+```javascript
+    ssAds.showRewardedAd(placementName, claimSpace, successCallback, failureCallback);
 
-## What other events are supported?
-### Interstitial
-1. interstitialInitialized
-1. interstitialInitializationFailed
-1. interstitialAvailabilityChanged
-1. interstitialShown
-1. interstitialShowFailed
-1. interstitialClicked
-1. interstitialClosed
+    ssAds.showInterstitial(successCallback, failureCallback);
 
-### Offerwall
-1. offerwallClosed
-1. offerwallCreditFailed
-1. offerwallCreditReceived
-1. offerwallShowFailed
-1. offerwallOpened
-1. offerwallInitializationFailed
-1. offerwallInitialized
+    ssAds.isInterstitialReady(successCallback, failureCallback);
 
-### Rewarded Video
-1. rewardedVideoRewardReceived
-1. rewardedVideoEnded
-1. rewardedVideoStarted
-1. rewardedVideoAvailabilityChanged
-1. rewardedVideoClosed
-1. rewardedVideoOpened
-1. rewardedVideoInitializationFailed
-1. rewardedVideoInitialized
-1. rewardedVideoFailed
+    ssAds.showOfferwall(successCallback, failureCallback);
+```

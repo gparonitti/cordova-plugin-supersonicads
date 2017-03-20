@@ -1,10 +1,10 @@
 {
   "name": "cordova-plugin-supersonicads",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Ads support for supersonic ads to Cordova and Phonegap apps",
   "repository": {
     "type": "git",
-    "url": "https://github.com/blakgeek/cordova-plugin-supersonicads.git"
+    "url": "https://github.com/gparonitti/cordova-plugin-supersonicads.git"
   },
   "keywords": [
     "ecosystem:cordova",
@@ -14,7 +14,7 @@
   "author": "Carlos \"blakgeek\" Lawton",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/blakgeek/cordova-plugin-supersonicads/issues"
+    "url": "https://github.com/gparonitti/cordova-plugin-supersonicads/issues"
   },
-  "homepage": "https://github.com/blakgeek/cordova-plugin-supersonicads"
+  "homepage": "https://github.com/gparonitti/cordova-plugin-supersonicads"
 }
